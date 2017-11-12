@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
+	load()
+
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()["q"]
 
