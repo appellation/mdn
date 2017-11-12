@@ -12,7 +12,7 @@ func main() {
 
 		if len(q) < 1 {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("no query"))
+			io.WriteString(w, "no query")
 			return
 		}
 
