@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
-	"regexp"
+	"strings"
 
 	"github.com/schollz/closestmatch"
 )
@@ -70,21 +71,19 @@ func load() (err error) {
 	titles = make([]string, length)
 	resources = make([]Resource, length)
 
-	normalizer, err := regexp.Compile(`.prototype.?`)
-	if err != nil {
-		return err
-	}
-
 	i := 0
+	j := 0
 	for key, value := range keyed {
-		if normalizer.MatchString(key) {
-			titles[i] = normalizer.ReplaceAllString(key, "#")
+		if strings.Contains(key, ".prototype.") {
+			titles[j] = strings.Replace(key, ".prototype.", "#", -1)
 			titles = append(titles, key)
+			j++
 		} else {
-			titles[i] = key
+			titles[j] = key
 		}
 
 		resources[i] = value
+		j++
 		i++
 	}
 
