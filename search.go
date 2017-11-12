@@ -77,13 +77,13 @@ func load() (err error) {
 		if strings.Contains(key, ".prototype.") {
 			titles[j] = strings.Replace(key, ".prototype.", "#", -1)
 			titles = append(titles, key)
-			j++
+			j += 2
 		} else {
 			titles[j] = key
+			j++
 		}
 
 		resources[i] = value
-		j++
 		i++
 	}
 
