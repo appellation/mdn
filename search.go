@@ -71,7 +71,7 @@ func load() (err error) {
 	i := 0
 	for key, value := range keyed {
 		if normalizer.MatchString(key) {
-			titles[i] = normalizer.ReplaceAllString(key, "")
+			titles[i] = normalizer.ReplaceAllString(key, "#")
 			titles = append(titles, key)
 		} else {
 			titles[i] = key
