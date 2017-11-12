@@ -82,7 +82,6 @@ func load() (err error) {
 	}
 
 	matcher = closestmatch.New(titles, []int{2, 3, 4})
-
 	return nil
 }
 
