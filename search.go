@@ -26,15 +26,14 @@ type Resource struct {
 
 var keyed = make(map[string]Resource)
 var titles []string
-var resources []Resource
 
 var matcher *closestmatch.ClosestMatch
 
-func loadResource(resource Resource) {
-	keyed[resource.Title] = resource
+func loadResource(base map[string]Resource, resource Resource) {
+	base[resource.Title] = resource
 
 	for i := 0; i < len(resource.Subpages); i++ {
-		loadResource(resource.Subpages[i])
+		loadResource(base, resource.Subpages[i])
 	}
 }
 
@@ -48,6 +47,7 @@ func load() (err error) {
 		"Errors",
 	}
 
+	raw := make(map[string]Resource)
 	for _, e := range endpoints {
 		res, err := http.Get("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/" + e + "$children?expand")
 		if err != nil {
@@ -62,27 +62,31 @@ func load() (err error) {
 				return err
 			}
 
-			loadResource(p)
+			loadResource(raw, p)
 		}
 	}
 
-	length := len(keyed)
+	length := len(raw)
 	titles = make([]string, length)
-	resources = make([]Resource, length)
 
 	i := 0
-	j := 0
-	for key, value := range keyed {
-		if strings.Contains(key, ".prototype.") {
-			titles[j] = strings.Replace(key, ".prototype.", "#", -1)
-			titles = append(titles, key)
-			j += 2
-		} else {
-			titles[j] = key
-			j++
+	for key, value := range raw {
+		if strings.LastIndex(key, "()") == len(key)-2 {
+			key = strings.Replace(key, "()", "", -1)
+			keyed[key] = value
 		}
 
-		resources[i] = value
+		if strings.Contains(key, ".prototype.") {
+			hash := strings.Replace(key, ".prototype.", "#", -1)
+			period := strings.Replace(key, ".prototype.", ".", -1)
+
+			titles = append(titles, hash, period)
+			keyed[hash] = value
+			keyed[period] = value
+		}
+
+		keyed[key] = value
+		titles[i] = key
 		i++
 	}
 
