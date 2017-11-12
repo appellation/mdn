@@ -10,11 +10,18 @@ import (
 
 // Resource an MDN page
 type Resource struct {
-	Locale   string
-	Slug     string
-	Title    string
-	URL      string
-	Subpages []Resource
+	ID           uint
+	Label        string
+	Locale       string
+	Modified     string
+	Slug         string
+	Subpages     []Resource
+	Summary      string
+	Tags         []string
+	Title        string
+	Translations []Resource
+	UUID         string
+	URL          string
 }
 
 var keyed = make(map[string]Resource)
@@ -42,7 +49,7 @@ func load() (err error) {
 	}
 
 	for _, e := range endpoints {
-		res, err := http.Get("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/" + e + "$children")
+		res, err := http.Get("https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/" + e + "$children?expand")
 		if err != nil {
 			return err
 		}
