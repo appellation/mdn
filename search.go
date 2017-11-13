@@ -71,7 +71,8 @@ func load() (err error) {
 		}
 
 		if strings.Contains(key, ".prototype.") {
-			key = strings.Replace(key, ".prototype.", "#", -1)
+			hash := strings.Replace(key, ".prototype.", "#", -1)
+			keyed[hash] = value
 		}
 
 		keyed[key] = value
