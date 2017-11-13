@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"math"
 	"net/http"
 	"strings"
 
-	"github.com/schollz/closestmatch"
+	"github.com/arbovm/levenshtein"
 )
 
 // Resource an MDN page
@@ -25,9 +26,6 @@ type Resource struct {
 }
 
 var keyed = make(map[string]Resource)
-var titles []string
-
-var matcher *closestmatch.ClosestMatch
 
 func loadResource(base map[string]Resource, resource Resource) {
 	base[resource.Title] = resource
@@ -66,10 +64,6 @@ func load() (err error) {
 		}
 	}
 
-	length := len(raw)
-	titles = make([]string, length)
-
-	i := 0
 	for key, value := range raw {
 		if strings.LastIndex(key, "()") == len(key)-2 {
 			key = strings.Replace(key, "()", "", -1)
@@ -77,24 +71,26 @@ func load() (err error) {
 		}
 
 		if strings.Contains(key, ".prototype.") {
-			hash := strings.Replace(key, ".prototype.", "#", -1)
-			period := strings.Replace(key, ".prototype.", ".", -1)
-
-			titles = append(titles, hash, period)
-			keyed[hash] = value
-			keyed[period] = value
+			key = strings.Replace(key, ".prototype.", "#", -1)
 		}
 
 		keyed[key] = value
-		titles[i] = key
-		i++
 	}
 
-	matcher = closestmatch.New(titles, []int{2, 3, 4})
 	return nil
 }
 
 func search(query string) (out Resource) {
-	match := matcher.Closest(query)
-	return keyed[match]
+	var match Resource
+	var matchDist = math.MaxInt32
+
+	for title, resource := range keyed {
+		distance := levenshtein.Distance(title, query)
+		if distance < matchDist {
+			match = resource
+			matchDist = distance
+		}
+	}
+
+	return match
 }
