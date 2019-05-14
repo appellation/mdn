@@ -53,8 +53,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// log.Println(ingester.Count("js_summary", "", ""))
-	log.Println(searcher.Query(CollectionSummary, Bucket, "global", sonic.QueryOptions{}))
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query().Get("q")
 
@@ -71,6 +69,7 @@ func main() {
 			return
 		}
 
+		log.Println(res)
 		bytes, err := json.Marshal(res)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)

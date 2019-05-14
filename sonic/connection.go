@@ -78,9 +78,8 @@ func (c *Connection) SendAsync(m *Message) (res *Message, err error) {
 	}
 
 	id := res.Args[0]
-	ch := make(chan *Message)
-	c.async[id] = ch
-	defer delete(c.async, id)
+	ch, del := c.ensureAsyncChan(id)
+	defer del()
 
 	res = <-ch
 	return
@@ -139,12 +138,23 @@ func (c *Connection) listen() error {
 
 		log.Printf("rcv: %s\n", msg)
 		if msg.Name == "EVENT" {
-			ch := c.async[msg.Args[1]]
-			if ch != nil {
-				ch <- msg
-			}
+			ch, del := c.ensureAsyncChan(msg.Args[1])
+			defer del()
+			ch <- msg
 		} else {
 			c.rcv <- msg
 		}
 	}
+}
+
+func (c *Connection) ensureAsyncChan(id string) (chan *Message, func()) {
+	ch := c.async[id]
+	if ch == nil {
+		ch = make(chan *Message, 1)
+		c.async[id] = ch
+		return ch, func() {
+			delete(c.async, id)
+		}
+	}
+	return ch, func() {}
 }
