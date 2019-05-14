@@ -1,11 +1,11 @@
-FROM golang:1.9
+FROM golang:latest
 
-WORKDIR /go/src/mdn
+WORKDIR /usr/src/mdn
+COPY go.mod go.sum ./
+
+RUN go mod download
 COPY . .
-
-RUN go-wrapper download
-RUN go-wrapper install
+RUN go build
 
 EXPOSE 8080
-
-CMD ["go-wrapper", "run"]
+CMD ["./mdn"]

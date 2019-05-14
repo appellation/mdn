@@ -1,0 +1,11 @@
+version: '2'
+services:
+  mdn:
+    build: .
+    ports:
+      - "8080:8080"
+  sonic:
+    build: ./sonic
+    volumes:
+      # - ./sonic/data/:/var/lib/sonic/store/
+      - ./sonic/sonic.cfg:/etc/sonic.cfg
