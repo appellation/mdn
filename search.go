@@ -79,8 +79,8 @@ func ingestResource(ingest *sonic.Ingest, resource *Resource) error {
 	}
 
 	wg := sync.WaitGroup{}
+	wg.Add(len(resource.Subpages))
 	for _, sub := range resource.Subpages {
-		wg.Add(1)
 		go func(pg *Resource) {
 			defer wg.Done()
 			err := ingestResource(ingest, pg)
