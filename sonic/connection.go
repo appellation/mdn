@@ -7,6 +7,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Connection represents a connection to the Sonic server
@@ -35,6 +36,7 @@ func Connect(addr, pass string) (conn *Connection, err error) {
 		mux:      sync.Mutex{},
 	}
 	go conn.listen()
+	go conn.ping(30 * time.Second)
 
 	msg := <-conn.rcv
 	if msg.Name != "CONNECTED" {
@@ -143,6 +145,25 @@ func (c *Connection) listen() error {
 			c.rcv <- msg
 		}
 	}
+}
+
+func (c *Connection) ping(interval time.Duration) error {
+	t := time.NewTicker(interval)
+	defer t.Stop()
+
+	pingMsg := &Message{Name: "PING"}
+	for range t.C {
+		res, err := c.Send(pingMsg)
+		if err != nil {
+			return err
+		}
+
+		if res.Name != "PONG" {
+			return ErrUnexpectedResponse
+		}
+	}
+
+	return nil
 }
 
 func (c *Connection) ensureAsyncChan(id string) chan *Message {
